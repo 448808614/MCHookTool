@@ -3,6 +3,8 @@ package com.xxnn.mchooktool;
 import de.robv.android.xposed.*;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
+import java.io.ByteArrayInputStream;
+
 /**
  * @author weiguan
  * @desc:
@@ -38,6 +40,7 @@ public class MainHook implements IXposedHookLoadPackage {
                         }
                     });
 
+            // hook接收的消息
             XposedHelpers.findAndHookMethod("com.tencent.qphone.base.util.CodecWarpper",
                     lpparam.classLoader, "onReceData", new XC_MethodHook() {
                         // 执行方法之后执行的方法
@@ -49,8 +52,32 @@ public class MainHook implements IXposedHookLoadPackage {
                             }
                         }
                     });
+
+            // hook收到的消息
+            XposedHelpers.findAndHookMethod("com.tencent.qphone.base.util.CodecWarpper",
+                    lpparam.classLoader, "encodeRequest", new XC_MethodHook() {
+                        // 执行方法之后执行的方法
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            hookSendPacket(param);
+                        }
+                    });
         } catch (Throwable e) {
             XposedBridge.log(e);
+        }
+    }
+
+    private void hookSendPacket(XC_MethodHook.MethodHookParam param) {
+        // encode结果, 字节数组
+        byte[] result = (byte[]) param.getResult();
+        if (param.args.length == 17) {
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(result);
+        } else if (param.args.length == 16) {
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(result);
+        } else if (param.args.length == 14) {
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(result);
+        } else {
+            XposedBridge.log("hook到了个不知道什么东西");
         }
     }
 
