@@ -1,14 +1,11 @@
 package com.xxnn.hook;
 
-import com.xxnn.utils.Initiator;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import okhttp3.*;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 
 import static com.xxnn.utils.Initiator.load;
 
@@ -83,21 +80,18 @@ public class MainHook {
             String command = (String) param.args[5];
             String uin = (String) param.args[9];
             byte[] buffer = (byte[]) param.args[15];
-            XposedBridge.log("McHookTool -> send: " + command);
             saveRequest(seq, command, uin, buffer);
         } else if (param.args.length == 16) {
             Integer seq = (Integer) param.args[0];
             String command = (String) param.args[5];
             String uin = (String) param.args[9];
             byte[] buffer = (byte[]) param.args[14];
-            XposedBridge.log("McHookTool: -> send: " + command);
             saveRequest(seq, command, uin, buffer);
         } else if (param.args.length == 14) {
             Integer seq = (Integer) param.args[0];
             String command = (String) param.args[5];
             String uin = (String) param.args[9];
             byte[] buffer = (byte[]) param.args[12];
-            XposedBridge.log("McHookTool -> send: " + command);
             saveRequest(seq, command, uin, buffer);
         } else {
             XposedBridge.log("McHookTool -> send: hook到了个不知道什么东西");
@@ -121,7 +115,7 @@ public class MainHook {
     }
 
     private void saveRequest(Integer seq, String command, String uin, byte[] buffer) {
-        String url = String.format("http://192.168.8.58:8888/test/receive?seq=%s&command=%s&uin=%s", seq, command, uin);
+        String url = String.format("http://192.168.8.58:8888/test/send?seq=%s&command=%s&uin=%s", seq, command, uin);
         OkHttpClient okHttpClient = new OkHttpClient();
         RequestBody body = RequestBody.create(buffer);
         final Request request = new Request.Builder()

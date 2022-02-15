@@ -34,6 +34,7 @@ public class StartUpHook {
             return;
         }
         try {
+            // 注入到主进程里？
             XC_MethodHook startup = new XC_MethodHook(51) {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -56,6 +57,7 @@ public class StartUpHook {
                         if (app != null) {
                             XposedBridge.log("McHookTool: 注入成功");
                         }
+                        // 开始初始化
                         execStartupInit(app, param.thisObject, null, false);
                     } catch (Throwable e) {
                         throw e;
@@ -112,9 +114,11 @@ public class StartUpHook {
             return;
         }
         System.setProperty(MC_FULL_TAG, "true");
+        // 不知道什么用
         injectClassLoader(classLoader);
+        // 把classLoader存起来
         Initiator.init(ctx.getClassLoader());
-
+        // 初始化hook方法,hook要hook的方法
         MainHook.getInstance().hookMethod(classLoader);
         sec_static_stage_inited = true;
         deleteDirIfNecessaryNoThrow(ctx);

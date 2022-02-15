@@ -1,17 +1,9 @@
 package com.xxnn.mchooktool;
 
-import android.content.Context;
-import android.util.Log;
+
 import com.xxnn.hook.StartUpHook;
 import de.robv.android.xposed.*;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
-import okhttp3.*;
-import org.jetbrains.annotations.NotNull;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 /**
  * @author weiguan
@@ -28,6 +20,7 @@ public class HookEntry implements IXposedHookLoadPackage {
         }
 
         try {
+            // 开始初始化
             StartUpHook.getInstance().doInit(lpparam.classLoader);
         } catch (Throwable e) {
             XposedBridge.log(e);
