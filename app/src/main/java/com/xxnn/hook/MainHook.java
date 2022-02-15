@@ -8,6 +8,7 @@ import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 import static com.xxnn.utils.Initiator.load;
 
@@ -83,21 +84,21 @@ public class MainHook {
             String uin = (String) param.args[9];
             byte[] buffer = (byte[]) param.args[15];
             XposedBridge.log("McHookTool -> send: " + command);
-            saveData(seq,command,uin,buffer);
+            saveRequest(seq, command, uin, buffer);
         } else if (param.args.length == 16) {
             Integer seq = (Integer) param.args[0];
             String command = (String) param.args[5];
             String uin = (String) param.args[9];
             byte[] buffer = (byte[]) param.args[14];
             XposedBridge.log("McHookTool: -> send: " + command);
-            saveData(seq,command,uin,buffer);
+            saveRequest(seq, command, uin, buffer);
         } else if (param.args.length == 14) {
             Integer seq = (Integer) param.args[0];
             String command = (String) param.args[5];
             String uin = (String) param.args[9];
             byte[] buffer = (byte[]) param.args[12];
             XposedBridge.log("McHookTool -> send: " + command);
-            saveData(seq,command,uin,buffer);
+            saveRequest(seq, command, uin, buffer);
         } else {
             XposedBridge.log("McHookTool -> send: hook到了个不知道什么东西");
         }
@@ -107,13 +108,19 @@ public class MainHook {
         XC_MethodHook xcMethodHook = new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                return;
+                Object object = param.args[0];
+                byte[] buffer = (byte[]) XposedHelpers.callMethod(object, "getWupBuffer");
+                String command = (String) XposedHelpers.callMethod(object, "getServiceCmd");
+                String uin = (String) XposedHelpers.callMethod(object, "getUin");
+                Integer ssoSeq = (Integer) XposedHelpers.callMethod(object, "getRequestSsoSeq");
+                // byte[] msgCookie = (byte[]) XposedHelpers.callMethod(object, "getMsgCookie");
+                saveRequest(ssoSeq, command, uin, buffer);
             }
         };
         XposedBridge.hookAllMethods(clazz, "onResponse", xcMethodHook);
     }
 
-    private void saveData(Integer seq, String command, String uin, byte[] buffer) {
+    private void saveRequest(Integer seq, String command, String uin, byte[] buffer) {
         String url = String.format("http://192.168.8.58:8888/test/receive?seq=%s&command=%s&uin=%s", seq, command, uin);
         OkHttpClient okHttpClient = new OkHttpClient();
         RequestBody body = RequestBody.create(buffer);
@@ -121,17 +128,17 @@ public class MainHook {
                 .url(url)
                 .post(body)
                 .build();
-        Call call = okHttpClient.newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+        okHttpClient.newCall(request);
+    }
 
-            }
-
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-
-            }
-        });
+    private void saveReceive(Integer seq, String command, String uin, byte[] buffer) {
+        String url = String.format("http://192.168.8.58:8888/test/receive?seq=%s&command=%s&uin=%s", seq, command, uin);
+        OkHttpClient okHttpClient = new OkHttpClient();
+        RequestBody body = RequestBody.create(buffer);
+        final Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        okHttpClient.newCall(request);
     }
 }
