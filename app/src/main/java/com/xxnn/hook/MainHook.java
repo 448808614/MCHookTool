@@ -128,7 +128,16 @@ public class MainHook {
                 .url(url)
                 .post(body)
                 .build();
-        okHttpClient.newCall(request);
+        Call call = okHttpClient.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+            }
+
+            @Override
+            public void onResponse(Call call, okhttp3.Response response) throws IOException {
+            }
+        });
     }
 
     private void saveReceive(Integer seq, String command, String uin, byte[] buffer) {
@@ -139,6 +148,15 @@ public class MainHook {
                 .url(url)
                 .post(body)
                 .build();
-        okHttpClient.newCall(request);
+        Call call = okHttpClient.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+            }
+
+            @Override
+            public void onResponse(Call call, okhttp3.Response response) throws IOException {
+            }
+        });
     }
 }
