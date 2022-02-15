@@ -4,12 +4,11 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29"
-                     tools:ignore="ScopedStorage"
+                     tools:ignore="ScopedStorage"/>
 
-    />
     <application
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
@@ -31,19 +30,19 @@
         <!--表明这是一个xposed插件-->
         <meta-data
                 android:name="xposedmodule"
-                android:value="true" />
+                android:value="true"/>
         <!--插件的描述-->
         <meta-data
                 android:name="xposeddescription"
-                android:value="hook tx qq for mcbot development" />
+                android:value="hook tx qq for mcbot development"/>
         <!--指定xposed的最小版本-->
         <meta-data
                 android:name="xposedminversion"
-                android:value="30" />
+                android:value="30"/>
         <!--模块作用域-->
         <meta-data
                 android:name="xposedscope"
-                android:resource="@array/xposed_scope" />
+                android:resource="@array/xposed_scope"/>
 
     </application>
 

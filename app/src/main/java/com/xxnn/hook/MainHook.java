@@ -1,6 +1,6 @@
 package com.xxnn.hook;
 
-import android.os.Environment;
+import android.annotation.SuppressLint;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
@@ -22,7 +22,7 @@ public class MainHook {
 
     public MainHook() {
         try {
-            String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/McHookTool";
+            @SuppressLint("SdCardPath") String path = "/data/data/com.xxnn.mchooktool/";
             FileReader fileReader = new FileReader(path + "/address.txt");
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             address = bufferedReader.readLine();

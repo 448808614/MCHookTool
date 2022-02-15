@@ -1,8 +1,8 @@
 package com.xxnn.mchooktool;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.pm.PackageManager;
-import android.os.Environment;
 import android.os.Looper;
 import android.view.View;
 import android.widget.EditText;
@@ -10,7 +10,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import androidx.core.app.ActivityCompat;
-import de.robv.android.xposed.XposedBridge;
 import okhttp3.*;
 
 import java.io.File;
@@ -33,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     }
 
-    public void onclick(View view) {
+    public void onclick(View view) throws IOException {
         verifyStoragePermissions(MainActivity.this);
         EditText addressEditText = findViewById(R.id.address);
         String address = addressEditText.getText().toString();
@@ -54,9 +53,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call call, okhttp3.Response response) throws IOException {
                 try {
-                    String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/McHookTool";
+                    @SuppressLint("SdCardPath") String path = "/data/data/com.xxnn.mchooktool/";
                     makeFilePath(path, "address.txt");
-                    FileWriter fileWriter = new FileWriter(path + "/address.txt", false);
+                    FileWriter fileWriter = new FileWriter(path + "address.txt", false);
                     fileWriter.write(url);
                     fileWriter.close();
                     toast("连接/保存成功!");
