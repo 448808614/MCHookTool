@@ -1,4 +1,4 @@
-package com.xxnn.mchooktool;
+package com.xxnn.hook;
 
 
 import com.xxnn.hook.StartUpHook;
