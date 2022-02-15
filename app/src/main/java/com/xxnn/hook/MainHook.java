@@ -29,52 +29,48 @@ public class MainHook {
 
 
     public void hookMethod(ClassLoader classLoader) {
-        // 开始hook方法
-        // 参数1: class路径, 参数3: 方法名
-
-        // hook初始化函数, 强制打开调试模式
         Class clz = load("com.tencent.qphone.base.util.CodecWarpper");
         if (clz == null) {
             XposedBridge.log("McHookTool: CodecWarpper isnull");
         }
-        XposedHelpers.findAndHookMethod(clz, "init", new XC_MethodHook() {
-                    // 执行方法之前执行的方法
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        if (param.args.length >= 2) {
-                            param.args[1] = true;
-                            if (!isInit) {
-                                hookReceivePacket(param.thisObject.getClass());
-                                isInit = true;
-                            }
-                        }
-                    }
-                });
-
-        // hook接收的消息
-        XposedHelpers.findAndHookMethod(clz, "onReceData", new XC_MethodHook() {
-                    // 执行方法之后执行的方法
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                        if (!isInit) {
-                            hookReceivePacket(param.thisObject.getClass());
-                            isInit = true;
-                        }
-                    }
-                });
-
-        // hook收到的消息
-        XposedHelpers.findAndHookMethod(clz, "encodeRequest", new XC_MethodHook() {
-                    // 执行方法之后执行的方法
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                        hookSendPacket(param);
-                    }
-                });
+        hookFirst(clz);
     }
 
-    private void hookFirst() {
-
+    private void hookFirst(Class<?> clazz) {
+        XC_MethodHook init = new XC_MethodHook() {
+            // 执行方法之前执行的方法
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                // hook初始化函数, 强制打开调试模式
+                if (param.args.length >= 2) {
+                    param.args[1] = true;
+                    if (!isInit) {
+                        hookReceivePacket(param.thisObject.getClass());
+                        isInit = true;
+                    }
+                }
+            }
+        };
+        XC_MethodHook onReceData = new XC_MethodHook() {
+            // 执行方法之后执行的方法
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                if (!isInit) {
+                    hookReceivePacket(param.thisObject.getClass());
+                    isInit = true;
+                }
+            }
+        };
+        XC_MethodHook encodeRequest = new XC_MethodHook() {
+            // 执行方法之后执行的方法
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                hookSendPacket(param);
+            }
+        };
+        XposedBridge.hookAllMethods(clazz, "init", init);
+        XposedBridge.hookAllMethods(clazz, "onReceData", onReceData);
+        XposedBridge.hookAllMethods(clazz, "encodeRequest", encodeRequest);
     }
 
 
@@ -86,24 +82,24 @@ public class MainHook {
             String command = (String) param.args[5];
             String uin = (String) param.args[9];
             byte[] buffer = (byte[]) param.args[15];
-            XposedBridge.log("McHookTool: " + command);
-            saveData(command);
+            XposedBridge.log("McHookTool -> send: " + command);
+            saveData(seq,command,uin,buffer);
         } else if (param.args.length == 16) {
             Integer seq = (Integer) param.args[0];
             String command = (String) param.args[5];
             String uin = (String) param.args[9];
             byte[] buffer = (byte[]) param.args[14];
-            XposedBridge.log("McHookTool: " + command);
-            saveData(command);
+            XposedBridge.log("McHookTool: -> send: " + command);
+            saveData(seq,command,uin,buffer);
         } else if (param.args.length == 14) {
             Integer seq = (Integer) param.args[0];
             String command = (String) param.args[5];
             String uin = (String) param.args[9];
             byte[] buffer = (byte[]) param.args[12];
-            XposedBridge.log("McHookTool: " + command);
-            saveData(command);
+            XposedBridge.log("McHookTool -> send: " + command);
+            saveData(seq,command,uin,buffer);
         } else {
-            XposedBridge.log("McHookTool: hook到了个不知道什么东西");
+            XposedBridge.log("McHookTool -> send: hook到了个不知道什么东西");
         }
     }
 
@@ -117,12 +113,13 @@ public class MainHook {
         XposedBridge.hookAllMethods(clazz, "onResponse", xcMethodHook);
     }
 
-    private void saveData(String command) {
-        String url = String.format("http://192.168.8.58:8888/test/receive?command=%s", command);
+    private void saveData(Integer seq, String command, String uin, byte[] buffer) {
+        String url = String.format("http://192.168.8.58:8888/test/receive?seq=%s&command=%s&uin=%s", seq, command, uin);
         OkHttpClient okHttpClient = new OkHttpClient();
+        RequestBody body = RequestBody.create(buffer);
         final Request request = new Request.Builder()
                 .url(url)
-                .get()//默认就是GET请求，可以不写
+                .post(body)
                 .build();
         Call call = okHttpClient.newCall(request);
         call.enqueue(new Callback() {

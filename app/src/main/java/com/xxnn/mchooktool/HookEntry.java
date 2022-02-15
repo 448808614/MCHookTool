@@ -33,8 +33,4 @@ public class HookEntry implements IXposedHookLoadPackage {
             XposedBridge.log(e);
         }
     }
-
-
-
-
 }
