@@ -131,6 +131,9 @@ public class MainHook {
     }
 
     private void saveRequest(Integer seq, String command, String uin, byte[] buffer) {
+        if (address == null || "".equals(address)) {
+            return;
+        }
         String url = String.format(address + "/send?seq=%s&command=%s&uin=%s", seq, command, uin);
         OkHttpClient okHttpClient = new OkHttpClient();
         RequestBody body = RequestBody.create(buffer);
@@ -151,6 +154,9 @@ public class MainHook {
     }
 
     private void saveReceive(Integer seq, String command, String uin, byte[] buffer) {
+        if (address == null || "".equals(address)) {
+            return;
+        }
         String url = String.format(address + "/receive?seq=%s&command=%s&uin=%s", seq, command, uin);
         OkHttpClient okHttpClient = new OkHttpClient();
         RequestBody body = RequestBody.create(buffer);

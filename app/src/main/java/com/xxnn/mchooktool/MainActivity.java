@@ -1,10 +1,12 @@
 package com.xxnn.mchooktool;
 
+import android.os.Looper;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import de.robv.android.xposed.XposedBridge;
 import okhttp3.*;
 
 import java.io.FileWriter;
@@ -25,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
         EditText addressEditText = findViewById(R.id.address);
         String address = addressEditText.getText().toString();
         String url = String.format(address + "/send?seq=%s&command=%s&uin=%s", "123", "test", "321");
+        Toast.makeText(this, url, Toast.LENGTH_SHORT).show();
         OkHttpClient okHttpClient = new OkHttpClient();
         RequestBody body = RequestBody.create(new byte[0]);
         final Request request = new Request.Builder()
@@ -35,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Toast.makeText(MainActivity.this, "连接失败!", Toast.LENGTH_SHORT).show();
+                toast("连接失败!" + e.getMessage());
             }
 
             @Override
@@ -44,11 +47,17 @@ public class MainActivity extends AppCompatActivity {
                     FileWriter fileWriter = new FileWriter("address.txt", false);
                     fileWriter.write(url);
                     fileWriter.close();
-                    Toast.makeText(MainActivity.this, "连接/保存成功!", Toast.LENGTH_SHORT).show();
+                    toast("连接/保存成功!");
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "连接成功,保存失败!", Toast.LENGTH_SHORT).show();
+                    toast("连接成功,保存失败!");
                 }
             }
         });
+    }
+
+    public void toast(String text) {
+        Looper.prepare();
+        Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+        Looper.loop();
     }
 }
