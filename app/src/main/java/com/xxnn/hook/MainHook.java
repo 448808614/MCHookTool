@@ -1,14 +1,12 @@
 package com.xxnn.hook;
 
+import android.os.Environment;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import okhttp3.*;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 
 import static com.xxnn.utils.Initiator.load;
 
@@ -24,7 +22,8 @@ public class MainHook {
 
     public MainHook() {
         try {
-            FileReader fileReader = new FileReader("address.txt");
+            String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/McHookTool";
+            FileReader fileReader = new FileReader(path + "/address.txt");
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             address = bufferedReader.readLine();
             bufferedReader.close();
