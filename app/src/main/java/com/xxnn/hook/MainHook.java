@@ -5,6 +5,9 @@ import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import okhttp3.*;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 
 import static com.xxnn.utils.Initiator.load;
@@ -17,6 +20,19 @@ import static com.xxnn.utils.Initiator.load;
 public class MainHook {
     private static boolean isInit = false;
     public static MainHook SELF;
+    public String address;
+
+    public MainHook() {
+        try {
+            FileReader fileReader = new FileReader("address.txt");
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            address = bufferedReader.readLine();
+            bufferedReader.close();
+            fileReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static MainHook getInstance() {
         if (SELF == null) {
@@ -108,14 +124,14 @@ public class MainHook {
                 String uin = (String) XposedHelpers.callMethod(object, "getUin");
                 Integer ssoSeq = (Integer) XposedHelpers.callMethod(object, "getRequestSsoSeq");
                 // byte[] msgCookie = (byte[]) XposedHelpers.callMethod(object, "getMsgCookie");
-                saveRequest(ssoSeq, command, uin, buffer);
+                saveReceive(ssoSeq, command, uin, buffer);
             }
         };
         XposedBridge.hookAllMethods(clazz, "onResponse", xcMethodHook);
     }
 
     private void saveRequest(Integer seq, String command, String uin, byte[] buffer) {
-        String url = String.format("http://192.168.8.58:8888/test/send?seq=%s&command=%s&uin=%s", seq, command, uin);
+        String url = String.format(address + "/send?seq=%s&command=%s&uin=%s", seq, command, uin);
         OkHttpClient okHttpClient = new OkHttpClient();
         RequestBody body = RequestBody.create(buffer);
         final Request request = new Request.Builder()
@@ -135,7 +151,7 @@ public class MainHook {
     }
 
     private void saveReceive(Integer seq, String command, String uin, byte[] buffer) {
-        String url = String.format("http://192.168.8.58:8888/test/receive?seq=%s&command=%s&uin=%s", seq, command, uin);
+        String url = String.format(address + "/receive?seq=%s&command=%s&uin=%s", seq, command, uin);
         OkHttpClient okHttpClient = new OkHttpClient();
         RequestBody body = RequestBody.create(buffer);
         final Request request = new Request.Builder()

@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import okhttp3.*;
 
+import java.io.FileWriter;
 import java.io.IOException;
 
 /**
@@ -23,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     public void onclick(View view) {
         EditText addressEditText = findViewById(R.id.address);
         String address = addressEditText.getText().toString();
-        String url = String.format(address, "123", "test", "321");
+        String url = String.format(address + "/send?seq=%s&command=%s&uin=%s", "123", "test", "321");
         OkHttpClient okHttpClient = new OkHttpClient();
         RequestBody body = RequestBody.create(new byte[0]);
         final Request request = new Request.Builder()
@@ -39,7 +40,14 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(Call call, okhttp3.Response response) throws IOException {
-                Toast.makeText(MainActivity.this, "连接成功!", Toast.LENGTH_SHORT).show();
+                try {
+                    FileWriter fileWriter = new FileWriter("address.txt", false);
+                    fileWriter.write(url);
+                    fileWriter.close();
+                    Toast.makeText(MainActivity.this, "连接/保存成功!", Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "连接成功,保存失败!", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
