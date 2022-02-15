@@ -55,16 +55,13 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call call, okhttp3.Response response) throws IOException {
                 try {
                     String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/McHookTool";
-                    File file = new File(path);
-                    if(!file.exists()) {
-                        file.mkdir();
-                    }
+                    makeFilePath(path, "address.txt");
                     FileWriter fileWriter = new FileWriter(path + "/address.txt", false);
                     fileWriter.write(url);
                     fileWriter.close();
                     toast("连接/保存成功!");
                 } catch (Exception e) {
-                    toast("连接成功,保存失败!");
+                    toast("连接成功,保存失败!" + e.getMessage());
                 }
             }
         });
@@ -77,15 +74,35 @@ public class MainActivity extends AppCompatActivity {
                     "android.permission.WRITE_EXTERNAL_STORAGE");
             if (permission != PackageManager.PERMISSION_GRANTED) {
                 // 没有写的权限，去申请写的权限，会弹出对话框
-                ActivityCompat.requestPermissions(activity, PERMISSIONS_STORAGE,REQUEST_EXTERNAL_STORAGE);
+                ActivityCompat.requestPermissions(activity, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
     public void toast(String text) {
         Looper.prepare();
         Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
         Looper.loop();
+    }
+
+    public static File makeFilePath(String filePath, String fileName) throws IOException {
+        File file = null;
+        makeRootDirectory(filePath);
+        file = new File(filePath + fileName);
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        return file;
+    }
+
+    // 生成文件夹
+    public static void makeRootDirectory(String filePath) {
+        File file = null;
+        file = new File(filePath);
+        if (!file.exists()) {
+            file.mkdir();
+        }
     }
 }
