@@ -12,9 +12,7 @@ import android.os.Bundle;
 import androidx.core.app.ActivityCompat;
 import okhttp3.*;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * @author weiguan
@@ -32,8 +30,25 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     }
 
-    public void onclick(View view) throws IOException {
+    @Override
+    protected void onStart() {
+        super.onStart();
         verifyStoragePermissions(MainActivity.this);
+        try {
+            @SuppressLint("SdCardPath") String path = "/data/data/com.xxnn.mchooktool/";
+            FileReader fileReader = new FileReader(path + "/address.txt");
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            String address = bufferedReader.readLine();
+            bufferedReader.close();
+            fileReader.close();
+            EditText addressEditText = findViewById(R.id.address);
+            addressEditText.setText(address);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void onclick(View view) throws IOException {
         EditText addressEditText = findViewById(R.id.address);
         String address = addressEditText.getText().toString();
         String url = String.format(address + "/send?seq=%s&command=%s&uin=%s", "123", "test", "321");
@@ -56,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
                     @SuppressLint("SdCardPath") String path = "/data/data/com.xxnn.mchooktool/";
                     makeFilePath(path, "address.txt");
                     FileWriter fileWriter = new FileWriter(path + "address.txt", false);
-                    fileWriter.write(url);
+                    fileWriter.write(address);
                     fileWriter.close();
                     toast("连接/保存成功!");
                 } catch (Exception e) {
