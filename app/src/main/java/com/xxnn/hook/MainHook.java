@@ -108,7 +108,7 @@ public class MainHook {
         XC_MethodHook xcMethodHook = new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                Object object = param.args[0];
+                Object object = param.args[1];
                 byte[] buffer = (byte[]) XposedHelpers.callMethod(object, "getWupBuffer");
                 String command = (String) XposedHelpers.callMethod(object, "getServiceCmd");
                 String uin = (String) XposedHelpers.callMethod(object, "getUin");
