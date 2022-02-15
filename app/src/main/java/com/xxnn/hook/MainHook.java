@@ -1,5 +1,6 @@
 package com.xxnn.hook;
 
+import com.xxnn.utils.Initiator;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
@@ -7,6 +8,8 @@ import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+
+import static com.xxnn.utils.Initiator.load;
 
 /**
  * @author weiguan
@@ -30,8 +33,11 @@ public class MainHook {
         // 参数1: class路径, 参数3: 方法名
 
         // hook初始化函数, 强制打开调试模式
-        XposedHelpers.findAndHookMethod("com.tencent.qphone.base.util.CodecWarpper",
-                classLoader, "init", new XC_MethodHook() {
+        Class clz = load("com.tencent.qphone.base.util.CodecWarpper");
+        if (clz == null) {
+            XposedBridge.log("McHookTool: CodecWarpper isnull");
+        }
+        XposedHelpers.findAndHookMethod(clz, "init", new XC_MethodHook() {
                     // 执行方法之前执行的方法
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -46,8 +52,7 @@ public class MainHook {
                 });
 
         // hook接收的消息
-        XposedHelpers.findAndHookMethod("com.tencent.qphone.base.util.CodecWarpper",
-                classLoader, "onReceData", new XC_MethodHook() {
+        XposedHelpers.findAndHookMethod(clz, "onReceData", new XC_MethodHook() {
                     // 执行方法之后执行的方法
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -59,14 +64,17 @@ public class MainHook {
                 });
 
         // hook收到的消息
-        XposedHelpers.findAndHookMethod("com.tencent.qphone.base.util.CodecWarpper",
-                classLoader, "encodeRequest", new XC_MethodHook() {
+        XposedHelpers.findAndHookMethod(clz, "encodeRequest", new XC_MethodHook() {
                     // 执行方法之后执行的方法
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         hookSendPacket(param);
                     }
                 });
+    }
+
+    private void hookFirst() {
+
     }
 
 

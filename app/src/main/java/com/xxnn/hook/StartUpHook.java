@@ -1,9 +1,13 @@
 package com.xxnn.hook;
 
 import android.content.Context;
+import android.os.Build;
+import com.xxnn.utils.Initiator;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.XposedHelpers;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -13,6 +17,8 @@ import java.lang.reflect.Method;
  * @date 2022/2/15 11:14
  */
 public class StartUpHook {
+    public static final String MC_FULL_TAG = "mc_full_tag";
+    private boolean first_stage_inited = false;
     private static boolean sec_static_stage_inited = false;
     public static StartUpHook SELF;
 
@@ -24,6 +30,9 @@ public class StartUpHook {
     }
 
     public void doInit(ClassLoader rtLoader) throws Throwable {
+        if (first_stage_inited) {
+            return;
+        }
         try {
             XC_MethodHook startup = new XC_MethodHook(51) {
                 @Override
@@ -44,6 +53,9 @@ public class StartUpHook {
                                     "field BaseApplicationImpl.sApplication not found");
                         }
                         app = (Context) fsApp.get(null);
+                        if (app != null) {
+                            XposedBridge.log("McHookTool: 注入成功");
+                        }
                         execStartupInit(app, param.thisObject, null, false);
                     } catch (Throwable e) {
                         throw e;
@@ -61,7 +73,7 @@ public class StartUpHook {
                 }
             }
             XposedBridge.hookMethod(m, startup);
-            sec_static_stage_inited = true;
+            first_stage_inited = true;
         } catch (Throwable e) {
             if ((e + "").contains("com.bug.zqq")) {
                 return;
@@ -71,6 +83,17 @@ public class StartUpHook {
             }
             throw e;
         }
+        try {
+            XposedHelpers
+                    .findAndHookMethod(rtLoader.loadClass("com.tencent.mobileqq.qfix.QFixApplication"),
+                            "attachBaseContext", Context.class, new XC_MethodHook() {
+                                @Override
+                                public void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                                    deleteDirIfNecessaryNoThrow((Context) param.args[0]);
+                                }
+                            });
+        } catch (ClassNotFoundException ignored) {
+        }
     }
 
     public static void execStartupInit(Context ctx, Object step, String lpwReserved,
@@ -78,13 +101,23 @@ public class StartUpHook {
         if (sec_static_stage_inited) {
             return;
         }
+        XposedBridge.log("McHookTool: 进入可执行状态");
         ClassLoader classLoader = ctx.getClassLoader();
         if (classLoader == null) {
             throw new AssertionError("ERROR: classLoader == null");
         }
+        if ("true".equals(System.getProperty(MC_FULL_TAG))) {
+            XposedBridge.log("Err:McHookTool reloaded??");
+            //I don't know... What happened?
+            return;
+        }
+        System.setProperty(MC_FULL_TAG, "true");
         injectClassLoader(classLoader);
+        Initiator.init(ctx.getClassLoader());
+
         MainHook.getInstance().hookMethod(classLoader);
         sec_static_stage_inited = true;
+        deleteDirIfNecessaryNoThrow(ctx);
     }
 
     private static void injectClassLoader(ClassLoader classLoader) {
@@ -99,8 +132,43 @@ public class StartUpHook {
             if (curr == null) {
                 curr = XposedBridge.class.getClassLoader();
             }
+            if (!curr.getClass().getName().equals(HybridClassLoader.class.getName())) {
+                fParent.set(mine, new HybridClassLoader(curr, classLoader));
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    static void deleteDirIfNecessaryNoThrow(Context ctx) {
+        try {
+            if (Build.VERSION.SDK_INT >= 24) {
+                deleteFile(new File(ctx.getDataDir(), "app_qqprotect"));
+            }
+            if (new File(ctx.getFilesDir(), "qn_disable_hot_patch").exists()) {
+                deleteFile(ctx.getFileStreamPath("hotpatch"));
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static boolean deleteFile(File file) {
+        if (!file.exists()) {
+            return false;
+        }
+        if (file.isFile()) {
+            file.delete();
+        } else if (file.isDirectory()) {
+            File[] listFiles = file.listFiles();
+            if (listFiles != null) {
+                for (File deleteFile : listFiles) {
+                    deleteFile(deleteFile);
+                }
+            }
+            file.delete();
+        }
+        return !file.exists();
     }
 }
