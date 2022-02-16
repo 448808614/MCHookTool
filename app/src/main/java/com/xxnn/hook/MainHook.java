@@ -136,6 +136,9 @@ public class MainHook {
         if (address == null || "".equals(address)) {
             return;
         }
+        if (buffer.length == 0) {
+            buffer = new byte[]{1};
+        }
         String url = String.format(address + "/send?seq=%s&command=%s&uin=%s", seq, command, uin);
         HttpUtil.post(url, buffer);
     }
@@ -143,6 +146,9 @@ public class MainHook {
     private void saveReceive(Integer seq, String command, String uin, byte[] buffer) {
         if (address == null || "".equals(address)) {
             return;
+        }
+        if (buffer.length == 0) {
+            buffer = new byte[]{1};
         }
         String url = String.format(address + "/receive?seq=%s&command=%s&uin=%s", seq, command, uin);
         HttpUtil.post(url, buffer);
