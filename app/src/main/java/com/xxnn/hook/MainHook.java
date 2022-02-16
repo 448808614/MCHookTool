@@ -2,6 +2,7 @@ package com.xxnn.hook;
 
 import android.annotation.SuppressLint;
 import android.os.Environment;
+import com.xxnn.utils.HttpUtil;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
@@ -136,22 +137,7 @@ public class MainHook {
             return;
         }
         String url = String.format(address + "/send?seq=%s&command=%s&uin=%s", seq, command, uin);
-        OkHttpClient okHttpClient = new OkHttpClient();
-        RequestBody body = RequestBody.create(buffer);
-        final Request request = new Request.Builder()
-                .url(url)
-                .post(body)
-                .build();
-        Call call = okHttpClient.newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-            }
-
-            @Override
-            public void onResponse(Call call, okhttp3.Response response) throws IOException {
-            }
-        });
+        HttpUtil.post(url, buffer);
     }
 
     private void saveReceive(Integer seq, String command, String uin, byte[] buffer) {
@@ -159,21 +145,6 @@ public class MainHook {
             return;
         }
         String url = String.format(address + "/receive?seq=%s&command=%s&uin=%s", seq, command, uin);
-        OkHttpClient okHttpClient = new OkHttpClient();
-        RequestBody body = RequestBody.create(buffer);
-        final Request request = new Request.Builder()
-                .url(url)
-                .post(body)
-                .build();
-        Call call = okHttpClient.newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-            }
-
-            @Override
-            public void onResponse(Call call, okhttp3.Response response) throws IOException {
-            }
-        });
+        HttpUtil.post(url, buffer);
     }
 }
