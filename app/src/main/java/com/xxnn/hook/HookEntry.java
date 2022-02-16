@@ -1,7 +1,6 @@
 package com.xxnn.hook;
 
 
-import com.xxnn.hook.StartUpHook;
 import de.robv.android.xposed.*;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 

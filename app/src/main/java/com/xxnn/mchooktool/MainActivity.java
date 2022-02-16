@@ -2,8 +2,12 @@ package com.xxnn.mchooktool;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Environment;
 import android.os.Looper;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -35,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         verifyStoragePermissions(MainActivity.this);
         try {
-            @SuppressLint("SdCardPath") String path = "/data/data/com.xxnn.mchooktool/";
+            @SuppressLint("SdCardPath") String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Documents/mchooktool";
             FileReader fileReader = new FileReader(path + "/address.txt");
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             String address = bufferedReader.readLine();
@@ -68,9 +72,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call call, okhttp3.Response response) throws IOException {
                 try {
-                    @SuppressLint("SdCardPath") String path = "/data/data/com.xxnn.mchooktool/";
-                    makeFilePath(path, "address.txt");
-                    FileWriter fileWriter = new FileWriter(path + "address.txt", false);
+                    @SuppressLint("SdCardPath") String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Documents/mchooktool";
+                    makeFilePath(path, "/address.txt");
+                    FileWriter fileWriter = new FileWriter(path + "/address.txt", false);
                     fileWriter.write(address);
                     fileWriter.close();
                     toast("连接/保存成功!");
@@ -81,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public static void verifyStoragePermissions(Activity activity) {
+    public void verifyStoragePermissions(Activity activity) {
         try {
             //检测是否有写的权限
             int permission = ActivityCompat.checkSelfPermission(activity,
@@ -90,6 +94,11 @@ public class MainActivity extends AppCompatActivity {
                 // 没有写的权限，去申请写的权限，会弹出对话框
                 ActivityCompat.requestPermissions(activity, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
             }
+            //Android11存储
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+//                Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+//                startActivity(intent);
+//            }
         } catch (Exception e) {
             e.printStackTrace();
         }
