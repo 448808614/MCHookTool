@@ -1,14 +1,23 @@
 package com.xxnn.hook;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 import com.xxnn.mchooktool.MainActivity;
 import com.xxnn.mchooktool.R;
+import com.xxnn.ui.CustomDialog;
+import com.xxnn.ui.ViewBuilder;
 import com.xxnn.utils.ReflexUtil;
+import com.xxnn.utils.Utils;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
@@ -73,7 +82,7 @@ public class SettingEntryHook {
                                         invoke_virtual(item, "setRightText", "设置",
                                                 CharSequence.class);
                                         item.setOnClickListener(v -> {
-                                            activity.startActivity(new Intent(activity, MainActivity.class));
+                                            showChatWordsCountDialog(activity);
                                             XposedBridge.log("按下了按钮");
                                         });
                                         if (itemRef != null) {
@@ -141,5 +150,84 @@ public class SettingEntryHook {
             log(e);
             return false;
         }
+    }
+
+    public void showChatWordsCountDialog(Context activity) {
+        XposedBridge.log("[mcHookTool] -> 开始" + (activity == null ? "t" : "f"));
+        CustomDialog dialog = CustomDialog.createFailsafe(activity);
+        Context ctx = dialog.getContext();
+        EditText editText = new EditText(ctx);
+        editText.setTextSize(16f);
+        int _5 = Utils.dip2px(activity, 5f);
+        editText.setPadding(_5, _5, _5, _5 * 2);
+        editText.setText("http://192.168.8.58/hook");
+        CheckBox checkBox = new CheckBox(ctx);
+        checkBox.setText("开启数据发送");
+        checkBox.setChecked(false);
+        LinearLayout linearLayout = new LinearLayout(ctx);
+        linearLayout.setOrientation(LinearLayout.VERTICAL);linearLayout.addView(
+                ViewBuilder.subtitle(activity, "本程序仅用于学习交流使用"),
+                ViewBuilder.newLinearLayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        _5,
+                        0,
+                        _5,
+                        0
+                )
+        );
+        linearLayout.addView(
+                ViewBuilder.subtitle(activity, "hook发送和接受数据"),
+                ViewBuilder.newLinearLayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        _5,
+                        0,
+                        _5,
+                        0
+                )
+        );
+        linearLayout.addView(
+                checkBox,
+                ViewBuilder.newLinearLayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        _5 * 2
+                )
+        );
+        linearLayout.addView(
+                editText,
+                ViewBuilder.newLinearLayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        _5 * 2
+                )
+        );
+        AlertDialog alertDialog = (AlertDialog) dialog.setTitle("输入hook服务端地址")
+                .setView(linearLayout)
+                .setCancelable(true)
+                .setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                }).setNeutralButton("测试", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                }).setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                }).create();
+        alertDialog.show();
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(activity, "点击了", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
