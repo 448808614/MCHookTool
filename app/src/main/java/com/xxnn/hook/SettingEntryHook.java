@@ -179,7 +179,21 @@ public class SettingEntryHook {
         editText.setText(address);
         CheckBox checkBox = new CheckBox(ctx);
         checkBox.setText("开启数据发送");
-        checkBox.setChecked(false);
+        boolean check = false;
+        try {
+            String path = activity.getExternalFilesDir("").getAbsolutePath();
+            FileReader fileReader = new FileReader(path + "/mchook/open.txt");
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            String open = bufferedReader.readLine();
+            bufferedReader.close();
+            fileReader.close();
+            if (open.equals("t")) {
+                check = true;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        checkBox.setChecked(check);
         checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             String filePath = activity.getExternalFilesDir("").getAbsolutePath() + "/mchook";
             try {
