@@ -21,13 +21,21 @@ import static com.xxnn.utils.Initiator.load;
 public class MainHook {
     private static boolean isInit = false;
     public static MainHook SELF;
+    public String open;
     public String address;
 
     public MainHook() {
         try {
             String path = HostInfo.getInstance().getContext().getExternalFilesDir("").getAbsolutePath();
-            FileReader fileReader = new FileReader(path + "/mchook/address.txt");
+            FileReader fileReader = new FileReader(path + "/mchook/open.txt");
             BufferedReader bufferedReader = new BufferedReader(fileReader);
+            open = bufferedReader.readLine();
+            XposedBridge.log("mcHookTool: 状态: " + open);
+            bufferedReader.close();
+            fileReader.close();
+
+            fileReader = new FileReader(path + "/mchook/address.txt");
+            bufferedReader = new BufferedReader(fileReader);
             address = bufferedReader.readLine();
             XposedBridge.log("mcHookTool: 地址: " + address);
             bufferedReader.close();
@@ -92,6 +100,9 @@ public class MainHook {
 
 
     private void hookSendPacket(XC_MethodHook.MethodHookParam param) {
+        if (open.equals("f")) {
+            return;
+        }
         // encode结果, 字节数组
         byte[] result = (byte[]) param.getResult();
         if (param.args.length == 17) {
@@ -121,6 +132,9 @@ public class MainHook {
         XC_MethodHook xcMethodHook = new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                if (open.equals("f")) {
+                    return;
+                }
                 Object object = param.args[1];
                 byte[] buffer = (byte[]) XposedHelpers.callMethod(object, "getWupBuffer");
                 String command = (String) XposedHelpers.callMethod(object, "getServiceCmd");

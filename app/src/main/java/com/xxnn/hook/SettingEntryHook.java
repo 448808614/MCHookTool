@@ -8,10 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.Toast;
+import android.widget.*;
 import com.xxnn.data.HostInfo;
 import com.xxnn.mchooktool.MainActivity;
 import com.xxnn.mchooktool.R;
@@ -183,6 +180,22 @@ public class SettingEntryHook {
         CheckBox checkBox = new CheckBox(ctx);
         checkBox.setText("开启数据发送");
         checkBox.setChecked(false);
+        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            String filePath = activity.getExternalFilesDir("").getAbsolutePath() + "/mchook";
+            try {
+                makeFilePath(filePath, "mchook.txt");
+                FileWriter fileWriter = new FileWriter(filePath + "/open.txt", false);
+                if (isChecked) {
+                    fileWriter.write("t");
+                } else {
+                    fileWriter.write("f");
+                }
+                fileWriter.close();
+                Toast.makeText(activity, "保存成功,重启QQ生效", Toast.LENGTH_SHORT).show();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
         LinearLayout linearLayout = new LinearLayout(ctx);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         linearLayout.addView(
