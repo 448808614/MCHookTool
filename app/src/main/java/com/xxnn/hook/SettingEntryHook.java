@@ -12,6 +12,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+import com.xxnn.data.HostInfo;
 import com.xxnn.mchooktool.MainActivity;
 import com.xxnn.mchooktool.R;
 import com.xxnn.ui.CustomDialog;
@@ -21,12 +22,19 @@ import com.xxnn.utils.Utils;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
+import okhttp3.*;
 
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.xxnn.utils.Initiator.load;
 import static com.xxnn.utils.ReflexUtil.*;
+import static com.xxnn.utils.Utils.makeFilePath;
 import static de.robv.android.xposed.XposedBridge.log;
 
 
@@ -160,12 +168,24 @@ public class SettingEntryHook {
         editText.setTextSize(16f);
         int _5 = Utils.dip2px(activity, 5f);
         editText.setPadding(_5, _5, _5, _5 * 2);
-        editText.setText("http://192.168.8.58/hook");
+        String address = "http://192.168.8.58/hook";
+        try {
+            String path = activity.getExternalFilesDir("").getAbsolutePath();
+            FileReader fileReader = new FileReader(path + "/mchook/address.txt");
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            address = bufferedReader.readLine();
+            bufferedReader.close();
+            fileReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        editText.setText(address);
         CheckBox checkBox = new CheckBox(ctx);
         checkBox.setText("开启数据发送");
         checkBox.setChecked(false);
         LinearLayout linearLayout = new LinearLayout(ctx);
-        linearLayout.setOrientation(LinearLayout.VERTICAL);linearLayout.addView(
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+        linearLayout.addView(
                 ViewBuilder.subtitle(activity, "本程序仅用于学习交流使用"),
                 ViewBuilder.newLinearLayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
@@ -206,27 +226,54 @@ public class SettingEntryHook {
         AlertDialog alertDialog = (AlertDialog) dialog.setTitle("输入hook服务端地址")
                 .setView(linearLayout)
                 .setCancelable(true)
-                .setPositiveButton("确认", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                .setPositiveButton("确认", (dialogConfirm, which) -> {
 
-                    }
-                }).setNeutralButton("测试", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                }).setNeutralButton("测试连接", (dialogTest, which) -> {
+                    testConnect(editText, activity);
+                }).setNegativeButton("取消", (dialogCancel, which) -> {
 
-                    }
-                }).setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                    }
                 }).create();
         alertDialog.show();
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(activity, "点击了", Toast.LENGTH_SHORT).show();
+                String filePath = activity.getExternalFilesDir("").getAbsolutePath() + "/mchook";
+                try {
+                    makeFilePath(filePath, "mchook.txt");
+                    FileWriter fileWriter = new FileWriter(filePath + "/address.txt", false);
+                    fileWriter.write(editText.getText().toString());
+                    fileWriter.close();
+                    Toast.makeText(activity, "保存成功,重启QQ生效", Toast.LENGTH_SHORT).show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    public void testConnect(EditText editText, Context activity) {
+        String address = editText.getText().toString();
+        if (!(address.startsWith("http") || address.startsWith("https"))) {
+            Toast.makeText(activity, "请输入正确的地址", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String url = String.format(address + "/send?seq=%s&command=%s&uin=%s", "123", "test", "321");
+        OkHttpClient okHttpClient = new OkHttpClient();
+        RequestBody body = RequestBody.create(new byte[0]);
+        final Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        Call call = okHttpClient.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Toast.makeText(activity, "连接失败!" + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onResponse(Call call, okhttp3.Response response) throws IOException {
+                Toast.makeText(activity, "连接成功", Toast.LENGTH_SHORT).show();
             }
         });
     }

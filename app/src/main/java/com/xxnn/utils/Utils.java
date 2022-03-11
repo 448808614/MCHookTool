@@ -500,7 +500,24 @@ public class Utils {
             }
             return msg + uin + uinType;
         }
-
     }
 
+    public static File makeFilePath(String filePath, String fileName) throws IOException {
+        File file = null;
+        makeRootDirectory(filePath);
+        file = new File(filePath + fileName);
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        return file;
+    }
+
+    // 生成文件夹
+    public static void makeRootDirectory(String filePath) {
+        File file = null;
+        file = new File(filePath);
+        if (!file.exists()) {
+            file.mkdir();
+        }
+    }
 }

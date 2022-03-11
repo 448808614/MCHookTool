@@ -1,7 +1,9 @@
 package com.xxnn.hook;
 
+import android.app.Application;
 import android.content.Context;
 import android.os.Build;
+import com.xxnn.data.HostInfo;
 import com.xxnn.utils.Initiator;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -116,6 +118,8 @@ public class StartUpHook {
         System.setProperty(MC_FULL_TAG, "true");
         // 不知道什么用
         injectClassLoader(classLoader);
+        //把application存起来
+        HostInfo.getInstance().init((Application) ctx);
         // 把classLoader存起来
         Initiator.init(ctx.getClassLoader());
         // 初始化hook方法,hook要hook的方法
