@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
                     fileWriter.close();
                     toast("连接/保存成功!");
                 } catch (Exception e) {
-                    toast("连接成功,保存失败!\n" + Environment.getExternalStorageDirectory().getAbsolutePath() + "\n" + e.getMessage());
+                    toast("连接成功,保存失败!\n"+Environment.getExternalStorageDirectory().getAbsolutePath() + e.getMessage());
                 }
             }
         });

@@ -120,6 +120,7 @@ public class StartUpHook {
         Initiator.init(ctx.getClassLoader());
         // 初始化hook方法,hook要hook的方法
         MainHook.getInstance().hookMethod(classLoader);
+        SettingEntryHook.INSTANCE.initOnce();
         sec_static_stage_inited = true;
         deleteDirIfNecessaryNoThrow(ctx);
     }
