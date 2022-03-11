@@ -55,6 +55,10 @@ public class MainActivity extends AppCompatActivity {
     public void onclick(View view) throws IOException {
         EditText addressEditText = findViewById(R.id.address);
         String address = addressEditText.getText().toString();
+        if (!(address.startsWith("http") || address.startsWith("https"))) {
+            toast("请输入正确的地址");
+            return;
+        }
         String url = String.format(address + "/send?seq=%s&command=%s&uin=%s", "123", "test", "321");
         OkHttpClient okHttpClient = new OkHttpClient();
         RequestBody body = RequestBody.create(new byte[0]);
@@ -79,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
                     fileWriter.close();
                     toast("连接/保存成功!");
                 } catch (Exception e) {
-                    toast("连接成功,保存失败!" + e.getMessage());
+                    toast("连接成功,保存失败!\n" + Environment.getExternalStorageDirectory().getAbsolutePath() + "\n" + e.getMessage());
                 }
             }
         });
