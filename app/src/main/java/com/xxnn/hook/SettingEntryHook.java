@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Looper;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
@@ -295,13 +296,19 @@ public class SettingEntryHook {
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Toast.makeText(activity, "连接失败!" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                toast(activity, "连接失败!" + e.getMessage());
             }
 
             @Override
             public void onResponse(Call call, okhttp3.Response response) throws IOException {
-                Toast.makeText(activity, "连接成功", Toast.LENGTH_SHORT).show();
+                toast(activity, "连接成功");
             }
         });
+    }
+
+    public void toast(Context ctx,String text) {
+        Looper.prepare();
+        Toast.makeText(ctx, text, Toast.LENGTH_SHORT).show();
+        Looper.loop();
     }
 }
