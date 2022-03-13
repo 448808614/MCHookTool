@@ -21,8 +21,8 @@ import static com.xxnn.utils.Initiator.load;
 public class MainHook {
     private static boolean isInit = false;
     public static MainHook SELF;
-    public String open;
-    public String address;
+    private String open;
+    private String address;
 
     public MainHook() {
         try {
